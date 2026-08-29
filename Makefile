@@ -38,3 +38,7 @@ mongo: ## Start a local MongoDB in Docker
 
 mongo-stop: ## Stop and remove the local MongoDB container
 	docker rm -f user-management-mongo
+
+# generate secret for JWT
+secret:
+	@openssl rand -base64 32
