@@ -1,45 +1,82 @@
-package usecase
+package user
 
 import (
 	"context"
+	"errors"
 
 	"user-management/internal/auth"
-	"user-management/internal/domain"
+	userdomain "user-management/internal/domain/user"
 )
 
-type UserUsecase struct {
-	repo      domain.UserRepository
+type Usecase struct {
+	repo      userdomain.Repository
 	jwtSecret string
 }
 
-func NewUserUsecase(repo domain.UserRepository, secret string) *UserUsecase {
-	return &UserUsecase{repo: repo, jwtSecret: secret}
+func New(repo userdomain.Repository, secret string) *Usecase {
+	return &Usecase{repo: repo, jwtSecret: secret}
 }
 
-func (uc *UserUsecase) Register(ctx context.Context, name, email, pw string) (*domain.User, error) {
-	if _, err := uc.repo.GetByEmail(ctx, email); err == nil {
-		return nil, domain.ErrEmailExists
+func (uc *Usecase) Register(ctx context.Context, name, email, pw string) (*userdomain.User, error) {
+	switch _, err := uc.repo.GetByEmail(ctx, email); {
+	case err == nil:
+		return nil, userdomain.ErrEmailExists
+	case !errors.Is(err, userdomain.ErrNotFound):
+		return nil, err
 	}
+
 	hashed, err := auth.HashPassword(pw)
 	if err != nil {
 		return nil, err
 	}
-	u := &domain.User{Name: name, Email: email, Password: hashed}
+	u := &userdomain.User{Name: name, Email: email, Password: hashed}
 	if err := uc.repo.Create(ctx, u); err != nil {
 		return nil, err
 	}
 	return u, nil
 }
 
-func (uc *UserUsecase) Login(ctx context.Context, email, pw string) (string, error) {
+func (uc *Usecase) Login(ctx context.Context, email, pw string) (string, error) {
 	u, err := uc.repo.GetByEmail(ctx, email)
 	if err != nil {
-		return "", domain.ErrInvalidCreds
+		return "", userdomain.ErrInvalidCreds
 	}
 	if !auth.CheckPassword(u.Password, pw) {
-		return "", domain.ErrInvalidCreds
+		return "", userdomain.ErrInvalidCreds
 	}
 	return auth.GenerateToken(u.ID, uc.jwtSecret)
 }
 
-// ... GetByID, List, Update, Delete ก็ห่อ repo เฉยๆ ตาม pattern เดียวกัน
+func (uc *Usecase) GetByID(ctx context.Context, id string) (*userdomain.User, error) {
+	return uc.repo.GetByID(ctx, id)
+}
+
+func (uc *Usecase) List(ctx context.Context) ([]*userdomain.User, error) {
+	return uc.repo.List(ctx)
+}
+
+func (uc *Usecase) Update(ctx context.Context, id, name, email string) (*userdomain.User, error) {
+	u, err := uc.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if email != u.Email {
+		switch other, err := uc.repo.GetByEmail(ctx, email); {
+		case err == nil && other.ID != id:
+			return nil, userdomain.ErrEmailExists
+		case err != nil && !errors.Is(err, userdomain.ErrNotFound):
+			return nil, err
+		}
+	}
+
+	u.Name, u.Email = name, email
+	if err := uc.repo.Update(ctx, u); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func (uc *Usecase) Delete(ctx context.Context, id string) error {
+	return uc.repo.Delete(ctx, id)
+}

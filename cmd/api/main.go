@@ -10,44 +10,35 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
 
-	httpAdapter "user-management/internal/adapter/http"
-	"user-management/internal/adapter/mongo"
 	"user-management/internal/config"
-	"user-management/internal/domain"
-	"user-management/internal/usecase"
+	"user-management/internal/connector"
+	userdomain "user-management/internal/domain/user"
+	"user-management/internal/handler"
+	userhandler "user-management/internal/handler/user"
+	userrepo "user-management/internal/repository/user"
+	userusecase "user-management/internal/usecase/user"
 )
 
 func main() {
 	_ = godotenv.Load()
 	cfg := config.Load()
 
-	db, disconnect, err := mongo.Connect(cfg.MongoURI, cfg.MongoDB)
+	db, disconnect, err := connector.Mongo(cfg.MongoURI, cfg.MongoDB)
 	if err != nil {
 		slog.Error("mongo connect failed", "err", err)
 		os.Exit(1)
 	}
 
-	repo := mongo.NewUserRepository(db)
-	uc := usecase.NewUserUsecase(repo, cfg.JWTSecret)
-	h := httpAdapter.NewHandler(uc)
+	repo := userrepo.NewRepository(db)
+	uc := userusecase.New(repo, cfg.JWTSecret)
+	h := userhandler.NewHandler(uc)
 
-	e := echo.New()
-	e.Use(httpAdapter.RequestLogger())
-
-	e.POST("/register", h.Register)
-	e.POST("/login", h.Login)
-
-	authGroup := e.Group("", httpAdapter.JWTMiddleware(cfg.JWTSecret))
-	authGroup.GET("/users/:id", h.GetByID)
-	authGroup.GET("/users", h.List)
-	authGroup.PUT("/users/:id", h.Update)
-	authGroup.DELETE("/users/:id", h.Delete)
+	e := handler.NewRouter(h, cfg.JWTSecret)
 
 	// background task: log user count every 10s
 	ctx, cancel := context.WithCancel(context.Background())
-	go func(repo domain.UserRepository) {
+	go func(repo userdomain.Repository) {
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 		for {

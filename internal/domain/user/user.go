@@ -1,8 +1,9 @@
-package domain
+package user
 
-import
+import (
 	"context"
 	"time"
+)
 
 type User struct {
 	ID        string    `bson:"_id,omitempty" json:"id"`
@@ -12,7 +13,7 @@ type User struct {
 	CreatedAt time.Time `bson:"created_at" json:"created_at"`
 }
 
-type UserRepository interface {
+type Repository interface {
 	Create(ctx context.Context, user *User) error
 	GetByID(ctx context.Context, id string) (*User, error)
 	GetByEmail(ctx context.Context, email string) (*User, error)
