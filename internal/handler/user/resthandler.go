@@ -44,7 +44,6 @@ func errorResponse(err error) error {
 	}
 }
 
-// bindAndValidate decodes the JSON body into req and runs its validate tags.
 func bindAndValidate(c echo.Context, req interface{}) error {
 	if err := c.Bind(req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid body")
@@ -55,14 +54,8 @@ func bindAndValidate(c echo.Context, req interface{}) error {
 	return nil
 }
 
-type registerReq struct {
-	Name     string `json:"name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8"`
-}
-
 func (h *Handler) Register(c echo.Context) error {
-	var req registerReq
+	var req userdomain.RegisterReq
 	if err := bindAndValidate(c, &req); err != nil {
 		return err
 	}
@@ -73,13 +66,8 @@ func (h *Handler) Register(c echo.Context) error {
 	return c.JSON(http.StatusCreated, u)
 }
 
-type loginReq struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-}
-
 func (h *Handler) Login(c echo.Context) error {
-	var req loginReq
+	var req userdomain.LoginReq
 	if err := bindAndValidate(c, &req); err != nil {
 		return err
 	}
@@ -106,13 +94,8 @@ func (h *Handler) List(c echo.Context) error {
 	return c.JSON(http.StatusOK, users)
 }
 
-type updateReq struct {
-	Name  string `json:"name" validate:"required"`
-	Email string `json:"email" validate:"required,email"`
-}
-
 func (h *Handler) Update(c echo.Context) error {
-	var req updateReq
+	var req userdomain.UpdateReq
 	if err := bindAndValidate(c, &req); err != nil {
 		return err
 	}
