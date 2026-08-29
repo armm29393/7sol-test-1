@@ -9,7 +9,7 @@ import (
 	userdomain "user-management/internal/domain/user"
 )
 
-// fakeRepo is an in-memory userdomain.Repository for usecase tests.
+// fakeRepo is an in-memory userrepo.Repository for usecase tests.
 type fakeRepo struct {
 	users  map[string]*userdomain.User
 	nextID int

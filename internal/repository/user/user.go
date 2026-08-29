@@ -32,15 +32,16 @@ func (d userDoc) toDomain() *userdomain.User {
 	}
 }
 
-type Repository struct {
+// Mongo is the MongoDB implementation of Repository.
+type Mongo struct {
 	coll *mongo.Collection
 }
 
-func NewRepository(db *mongo.Database) *Repository {
-	return &Repository{coll: db.Collection("users")}
+func NewMongo(db *mongo.Database) *Mongo {
+	return &Mongo{coll: db.Collection("users")}
 }
 
-func (r *Repository) Create(ctx context.Context, u *userdomain.User) error {
+func (r *Mongo) Create(ctx context.Context, u *userdomain.User) error {
 	u.CreatedAt = time.Now()
 	res, err := r.coll.InsertOne(ctx, userDoc{
 		Name:      u.Name,
@@ -59,7 +60,7 @@ func (r *Repository) Create(ctx context.Context, u *userdomain.User) error {
 	return nil
 }
 
-func (r *Repository) GetByEmail(ctx context.Context, email string) (*userdomain.User, error) {
+func (r *Mongo) GetByEmail(ctx context.Context, email string) (*userdomain.User, error) {
 	var d userDoc
 	if err := r.coll.FindOne(ctx, bson.M{"email": email}).Decode(&d); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -70,7 +71,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*userdomain.
 	return d.toDomain(), nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, id string) (*userdomain.User, error) {
+func (r *Mongo) GetByID(ctx context.Context, id string) (*userdomain.User, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, userdomain.ErrNotFound
@@ -85,7 +86,7 @@ func (r *Repository) GetByID(ctx context.Context, id string) (*userdomain.User, 
 	return d.toDomain(), nil
 }
 
-func (r *Repository) List(ctx context.Context) ([]*userdomain.User, error) {
+func (r *Mongo) List(ctx context.Context) ([]*userdomain.User, error) {
 	cur, err := r.coll.Find(ctx, bson.M{})
 	if err != nil {
 		return nil, err
@@ -103,7 +104,7 @@ func (r *Repository) List(ctx context.Context) ([]*userdomain.User, error) {
 	return users, cur.Err()
 }
 
-func (r *Repository) Update(ctx context.Context, u *userdomain.User) error {
+func (r *Mongo) Update(ctx context.Context, u *userdomain.User) error {
 	oid, err := primitive.ObjectIDFromHex(u.ID)
 	if err != nil {
 		return userdomain.ErrNotFound
@@ -121,7 +122,7 @@ func (r *Repository) Update(ctx context.Context, u *userdomain.User) error {
 	return nil
 }
 
-func (r *Repository) Delete(ctx context.Context, id string) error {
+func (r *Mongo) Delete(ctx context.Context, id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return userdomain.ErrNotFound
@@ -136,6 +137,6 @@ func (r *Repository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *Repository) Count(ctx context.Context) (int64, error) {
+func (r *Mongo) Count(ctx context.Context) (int64, error) {
 	return r.coll.CountDocuments(ctx, bson.M{})
 }

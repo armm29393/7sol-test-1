@@ -13,7 +13,6 @@ import (
 
 	"user-management/internal/config"
 	"user-management/internal/connector"
-	userdomain "user-management/internal/domain/user"
 	"user-management/internal/handler"
 	userhandler "user-management/internal/handler/user"
 	userrepo "user-management/internal/repository/user"
@@ -30,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	repo := userrepo.NewRepository(db)
+	repo := userrepo.NewMongo(db)
 	uc := userusecase.New(repo, cfg.JWTSecret)
 	h := userhandler.NewHandler(uc)
 
@@ -38,7 +37,7 @@ func main() {
 
 	// background task: log user count every 10s
 	ctx, cancel := context.WithCancel(context.Background())
-	go func(repo userdomain.Repository) {
+	go func(repo userrepo.Repository) {
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 		for {

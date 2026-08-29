@@ -6,14 +6,15 @@ import (
 
 	"user-management/internal/auth"
 	userdomain "user-management/internal/domain/user"
+	userrepo "user-management/internal/repository/user"
 )
 
 type Usecase struct {
-	repo      userdomain.Repository
+	repo      userrepo.Repository
 	jwtSecret string
 }
 
-func New(repo userdomain.Repository, secret string) *Usecase {
+func New(repo userrepo.Repository, secret string) *Usecase {
 	return &Usecase{repo: repo, jwtSecret: secret}
 }
 
