@@ -1,0 +1,40 @@
+info:
+  name: Delete
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{base_url}}/users/:id"
+  params:
+    - name: id
+      value: 6a9276da2d3c298bd940b147
+      type: path
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: example
+    request:
+      url: "{{base_url}}/users/:id"
+      method: DELETE
+      params:
+        - name: id
+          value: 6a926fd252c5e88c01851487
+          type: path
+    response:
+      status: 204
+      statusText: No Content
+      headers:
+        - name: date
+          value: Sat, 29 Aug 2026 06:05:52 GMT
+      body:
+        type: text
+        data: ""

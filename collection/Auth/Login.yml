@@ -1,0 +1,64 @@
+info:
+  name: Login
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base_url}}/login"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "arm@mail.com",
+        "password": "12121212"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        // Parse the JSON response body
+        const data = res.getBody();
+
+        // Extract the token (adjust 'token' or 'access_token' depending on your API's response payload)
+        const token = data.token; 
+
+        // Save the token to your currently active environment
+        bru.setEnvVar("token", token);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: example
+    request:
+      url: "{{base_url}}/login"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "arm@mail.com",
+            "password": "12121212"
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: content-type
+          value: application/json
+        - name: date
+          value: Sat, 29 Aug 2026 05:37:52 GMT
+        - name: content-length
+          value: "185"
+      body:
+        type: json
+        data: |-
+          {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwNjgyNzIsImlhdCI6MTc4Nzk4MTg3Miwic3ViIjoiNmE5MjZmZDI1MmM1ZTg4YzAxODUxNDg3In0.e6oY6IXGh27bdz0OX2jBNZdJL3RfTH7aRmW71Uqbihk"
+          }

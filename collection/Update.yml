@@ -1,0 +1,64 @@
+info:
+  name: Update
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: "{{base_url}}/users/:id"
+  params:
+    - name: id
+      value: 6a926fd252c5e88c01851487
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Arm2",
+        "email": "arm2@mail.com"
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: example
+    request:
+      url: "{{base_url}}/users/:id"
+      method: PUT
+      params:
+        - name: id
+          value: 6a926fd252c5e88c01851487
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Arm2",
+            "email": "arm2@mail.com"
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: content-type
+          value: application/json
+        - name: date
+          value: Sat, 29 Aug 2026 06:05:16 GMT
+        - name: content-length
+          value: "112"
+      body:
+        type: json
+        data: |-
+          {
+            "id": "6a926fd252c5e88c01851487",
+            "name": "Arm2",
+            "email": "arm2@mail.com",
+            "created_at": "2026-08-29T05:36:18.998Z"
+          }

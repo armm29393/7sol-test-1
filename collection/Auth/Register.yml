@@ -1,0 +1,84 @@
+info:
+  name: Register
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base_url}}/register"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Arm",
+        "email": "arm@mail.com",
+        "password": "12121212"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: example
+    request:
+      url: "{{base_url}}/register"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Arm",
+            "email": "arm@mail.com",
+            "password": "12121212"
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: content-type
+          value: application/json
+        - name: date
+          value: Sat, 29 Aug 2026 05:36:19 GMT
+        - name: content-length
+          value: "118"
+      body:
+        type: json
+        data: |-
+          {
+            "id": "6a926fd252c5e88c01851487",
+            "name": "Arm",
+            "email": "arm@mail.com",
+            "created_at": "2026-08-29T12:36:18.998252+07:00"
+          }
+  - name: "err: already registered"
+    request:
+      url: "{{base_url}}/register"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Arm",
+            "email": "arm@mail.com",
+            "password": "12121212"
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: content-type
+          value: application/json
+        - name: date
+          value: Sat, 29 Aug 2026 06:06:21 GMT
+        - name: content-length
+          value: "39"
+      body:
+        type: json
+        data: |-
+          {
+            "message": "email already registered"
+          }
