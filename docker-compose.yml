@@ -1,0 +1,19 @@
+services:
+  mongo:
+    image: mongo:8
+    # ports:
+    #   - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.prod
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:

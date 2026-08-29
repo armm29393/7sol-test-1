@@ -1,12 +1,12 @@
 BINARY := bin/api
 
-.PHONY: help run build test cover fmt vet tidy check clean mongo mongo-stop
+.PHONY: help dev build test cover fmt vet tidy check clean mongo mongo-stop
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 dev: ## Run the API server
-	@test -f .env || { cp .env.example .env; echo "created .env from .env.example - review it before running"; }
+	@test -f .env || test -f .env.local || { echo ".env or .env.local not found"; exit 1; }
 	go run ./cmd/api
 
 build: ## Build the API binary into bin/
@@ -42,3 +42,9 @@ mongo-stop: ## Stop and remove the local MongoDB container
 # generate secret for JWT
 secret:
 	@openssl rand -base64 32
+
+docker-up:
+	docker-compose up -d --build
+
+docker-down:
+	docker-compose down

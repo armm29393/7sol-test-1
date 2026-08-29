@@ -20,8 +20,11 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load()
+	for _, f := range []string{".env.local", ".env"} {
+		_ = godotenv.Load(f)
+	}
 	cfg := config.Load()
+	slog.Info("starting service", "env", cfg.Env)
 
 	db, disconnect, err := connector.Mongo(cfg.MongoURI, cfg.MongoDB)
 	if err != nil {
@@ -55,6 +58,7 @@ func main() {
 		}
 	}(repo)
 
+	slog.Info("server listening", "port", cfg.ServerPort)
 	// start server
 	go func() {
 		if err := e.Start(":" + cfg.ServerPort); err != nil && err != http.ErrServerClosed {
